@@ -1,0 +1,4 @@
+name = "zeus-auto-deployer"
+main = "_worker.js"
+compatibility_date = "2026-01-20"
+compatibility_flags = ["nodejs_compat"]

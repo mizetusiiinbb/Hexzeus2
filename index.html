@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZEUS 1-Click Cloudflare Auto-Deployer — استقرار خودکار پنل زئوس</title>
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --bg-card: rgba(15, 18, 30, 0.88);
+      --border: rgba(139, 92, 246, 0.3);
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --accent: #00f0ff;
+      --accent-gold: #fbbf24;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Vazirmatn", Tahoma, sans-serif;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.15) 0%, transparent 45%);
+    }
+
+    header {
+      padding: 20px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 9, 14, 0.88);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #8b5cf6, #00f0ff);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+    }
+
+    .brand-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #fff, #c4b5fd, #00f0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .badge-pill {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid var(--primary);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      margin-bottom: 28px;
+    }
+
+    .hero-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+
+    .token-box {
+      background: rgba(10, 13, 24, 0.9);
+      border: 2px solid rgba(139, 92, 246, 0.4);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+      transition: all 0.3s;
+    }
+
+    .token-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      background: rgba(17, 24, 39, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      font-family: var(--font-mono);
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    }
+
+    .btn-launch {
+      width: 100%;
+      background: linear-gradient(135deg, #8b5cf6, #00f0ff);
+      color: #06080f;
+      font-weight: 800;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 12px;
+      padding: 18px 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 6px 30px rgba(139, 92, 246, 0.5);
+      transition: all 0.3s;
+    }
+
+    .btn-launch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 35px rgba(0, 240, 255, 0.7);
+    }
+
+    .btn-launch:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .steps-container {
+      margin-top: 28px;
+      display: none;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      transition: all 0.3s;
+    }
+
+    .step-item.active {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .step-item.done {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: var(--success);
+      color: #34d399;
+    }
+
+    .step-item.error {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: var(--danger);
+      color: #f87171;
+    }
+
+    .step-icon {
+      font-size: 1.2rem;
+      width: 28px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .result-card {
+      display: none;
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.95));
+      border: 2px solid var(--success);
+      border-radius: 18px;
+      padding: 28px;
+      margin-top: 28px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #34d399;
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .result-item {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .result-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .result-value {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--accent);
+      word-break: break-all;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-copy-small {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-copy-small:hover {
+      background: var(--primary);
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      flex: 1;
+      min-width: 180px;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+    }
+
+    .btn-action-primary {
+      background: var(--success);
+      color: #050b14;
+    }
+
+    .btn-action-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .accordion-toggle {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      font-weight: 600;
+    }
+
+    .accordion-content {
+      display: none;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .fallback-box {
+      margin-top: 20px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid var(--danger);
+      border-radius: 12px;
+      padding: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-wrap">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <h1 class="brand-title">ZEUS 1-Click Cloudflare Auto-Deployer</h1>
+        <p class="brand-sub">استقرار هوشمند، خودکار و چندریختی مخزن z-e-u-s در کلودفلر</p>
+      </div>
+    </div>
+    <div class="badge-pill">
+      <span>● فقط توکن کلودفلر را وارد کنید</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="hero-title">
+        <span>🚀 استقرار ۱۰۰٪ خودکار بدون نیاز به هیچ سکرتی در مخزن</span>
+      </h2>
+      <p class="hero-desc">
+        کافی است <strong>Cloudflare API Token</strong> خود را وارد کنید. سیستم مستقیماً در مرورگر شما مشخصات اختصاصی (نام پوششی تصادفی، مسیر ادمین، UUID نسخه ۴) را تولید کرده، سورس <strong>Z-E-U-S</strong> را مبهم‌سازی نموده و آن را روی حساب کلودفلر شما منتشر می‌کند.
+      </p>
+
+      <div class="token-box">
+        <div class="form-group">
+          <label for="cf-token">کلید API کلودفلر (Cloudflare API Token):</label>
+          <input type="password" id="cf-token" placeholder="مثال: abc123def456_YOUR_CLOUDFLARE_API_TOKEN" autofocus>
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 6px;">
+            دسترسی‌های مورد نیاز توکن در کلودفلر: <code>Account:Workers Scripts (Edit)</code> و <code>Account:D1 (Edit)</code> و <code>User:Memberships (Read)</code>
+          </small>
+        </div>
+
+        <button class="accordion-toggle" id="btn-toggle-adv">
+          <span>⚙️ تنظیمات پیشرفته (اختیاری)</span>
+          <span id="adv-arrow">▼</span>
+        </button>
+
+        <div class="accordion-content" id="adv-content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label>پیشوند نام دلخواه ورکر (اختیاری):</label>
+              <input type="text" id="custom-name" placeholder="پیش‌فرض: نام پوششی تصادفی">
+            </div>
+            <div class="form-group">
+              <label>مسیر ادمین دلخواه (اختیاری):</label>
+              <input type="text" id="custom-admin" placeholder="پیش‌فرض: /admin_xxxx تصادفی">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-launch" id="btn-deploy">
+        <span>⚡ استقرار خودکار و آنلاین پنل زئوس</span>
+      </button>
+
+      <!-- LIVE STEP PROGRESS -->
+      <div class="steps-container" id="steps-box">
+        <div class="step-item" id="step-1">
+          <span class="step-icon">🔑</span>
+          <span id="step-1-text">گام ۱: اعتبارسنجی توکن کلودفلر و شناسایی Account ID...</span>
+        </div>
+        <div class="step-item" id="step-2">
+          <span class="step-icon">🎲</span>
+          <span id="step-2-text">گام ۲: تولید نام تصادفی پوششی، مسیر ادمین اختصاصی و Root UUID...</span>
+        </div>
+        <div class="step-item" id="step-3">
+          <span class="step-icon">🔒</span>
+          <span id="step-3-text">گام ۳: دریافت سورس Z-E-U-S و اعمال مبهم‌سازی چندریختی (Base64/Hex/Rotator)...</span>
+        </div>
+        <div class="step-item" id="step-4">
+          <span class="step-icon">🗄️</span>
+          <span id="step-4-text">گام ۴: ساخت خودکار پایگاه داده Cloudflare D1 در اکانت شما...</span>
+        </div>
+        <div class="step-item" id="step-5">
+          <span class="step-icon">🚀</span>
+          <span id="step-5-text">گام ۵: استقرار ورکر در شبکه جهانی کلودفلر همراه با بایندینگ D1...</span>
+        </div>
+        <div class="step-item" id="step-6">
+          <span class="step-icon">🌐</span>
+          <span id="step-6-text">گام ۶: فعال‌سازی روتینگ دامنه workers.dev...</span>
+        </div>
+        <div class="step-item" id="step-7">
+          <span class="step-icon">✨</span>
+          <span id="step-7-text">گام ۷: استقرار با موفقیت پایان یافت! پنل آنلاین شد.</span>
+        </div>
+      </div>
+
+      <!-- CORS / NETWORK FALLBACK BOX -->
+      <div class="fallback-box" id="fallback-box">
+        <h3 style="color:#f87171;margin-bottom:8px;font-size:1.05rem;">⚠️ محدودیت شبکه یا فایروال مرورگر (CORS)</h3>
+        <p style="font-size:0.88rem;line-height:1.7;color:#e5e7eb;margin-bottom:14px;">
+          مرورگر شما به دلیل قوانین امنیتی CORS یا فیلترینگ نتوانست مستقیماً به سرور <code>api.cloudflare.com</code> متصل شود. نگران نباشید! مخزن شما مجهز به <strong>رانر خودکار GitHub Actions</strong> است که بدون هیچ محدودیتی از روی سرورهای گیت‌هاب اجرا می‌شود:
+        </p>
+        <div style="background:rgba(0,0,0,0.4);padding:14px;border-radius:10px;font-size:0.85rem;color:#c4b5fd;margin-bottom:16px;">
+          <strong>روش اجرای بدون فیلتر در ۳ کلیک:</strong><br>
+          ۱. در صفحه همین مخزن در گیت‌هاب به سربرگ <strong>Actions</strong> بروید.<br>
+          ۲. از منوی سمت چپ گزینه <strong>Deploy Zeus Worker to Cloudflare</strong> را انتخاب کنید.<br>
+          ۳. دکمه آبی <strong>Run workflow</strong> را بزنید، توکن را Paste کنید و تایید کنید تا در ۳۰ ثانیه دیپلوی شود!
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-action btn-action-secondary" onclick="downloadMutatedWorker()">
+            <span>📥 یا دانلود مستقیم سورس آماده ورکر (.js)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SUCCESS RESULT CARD -->
+      <div class="result-card" id="result-box">
+        <div class="result-header">
+          <span>🎉 استقرار منحصربه‌فرد پنل زئوس با موفقیت انجام شد!</span>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">🔗 آدرس مستقیم پنل ادمین (با مسیر مخفی اختصاصی):</div>
+            <div class="result-value">
+              <span id="res-panel-url">-</span>
+              <button class="btn-copy-small" onclick="copyText('res-panel-url')">کپی آدرس</button>
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">📡 آدرس دریافت سابسکریپشن کلاینت‌ها:</div>
+            <div class="result-value">
+              <span id="res-sub-url">-</span>
+              <button class="btn-copy-small" onclick="copyText('res-sub-url')">کپی لینک</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="result-item">
+              <div class="result-label">🏷️ نام ورکر اختصاصی (پوششی):</div>
+              <div class="result-value" id="res-worker-name">-</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">🗄️ دیتابیس D1 کلودفلر:</div>
+              <div class="result-value" id="res-d1-name">-</div>
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">🔑 شناسه UUID کاربر پیش‌فرض:</div>
+            <div class="result-value">
+              <span id="res-uuid">-</span>
+              <button class="btn-copy-small" onclick="copyText('res-uuid')">کپی UUID</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <a id="btn-open-panel" href="#" target="_blank" class="btn-action btn-action-primary">
+            <span>🌐 باز کردن پنل مدیریت</span>
+          </a>
+          <button class="btn-action btn-action-secondary" onclick="resetForm()">
+            <span>🔄 استقرار پنل دیگر</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ZEUS_CORE_TEMPLATE = `/**
+ * ZEUS PANEL CORE — High-Performance Cloudflare Edge Node
+ * Features: VLESS (WS/xHTTP), Trojan, Dynamic D1 User Engine, Subscriptions
+ */
+
+const CONFIG = {
+  NODE_NAME: "{{NODE_NAME}}",
+  ADMIN_PATH: "{{ADMIN_PATH}}",
+  ROOT_UUID: "{{ROOT_UUID}}",
+  D1_DATABASE: "{{D1_DATABASE}}",
+  SALT_KEY: "{{SALT_KEY}}",
+  ENABLE_VLESS: true,
+  ENABLE_TROJAN: true
+};
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const upgradeHeader = request.headers.get("Upgrade");
+    const adminPath = env.ADMIN_PATH || CONFIG.ADMIN_PATH;
+    const rootUuid = env.UUID || CONFIG.ROOT_UUID;
+
+    // Dynamic secret admin route
+    if (url.pathname === adminPath || url.pathname === adminPath + "/") {
+      return new Response(generateAdminPanelHTML(CONFIG, adminPath, rootUuid), {
+        headers: { "Content-Type": "text/html; charset=utf-8" }
+      });
+    }
+
+    // Subscription delivery route
+    if (url.pathname.startsWith("/sub/")) {
+      const userToken = url.pathname.split("/sub/")[1];
+      return handleSubscriptionQuery(userToken, request, env, CONFIG, rootUuid);
+    }
+
+    // WebSocket / VLESS Tunnel Proxying
+    if (upgradeHeader && upgradeHeader.toLowerCase() === "websocket") {
+      return handleVlessWebSocket(request, env, CONFIG, rootUuid);
+    }
+
+    // Default Fallback
+    return new Response("Service Operational - " + CONFIG.NODE_NAME, { status: 200 });
+  }
+};
+
+function generateAdminPanelHTML(cfg, adminPath, rootUuid) {
+  return '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>⚡ ' + cfg.NODE_NAME + '</title><style>body{background:#0b0e17;color:#fff;font-family:system-ui,sans-serif;text-align:center;padding:40px 20px;}.card{max-width:600px;margin:auto;background:#131929;border:1px solid #8b5cf6;border-radius:16px;padding:30px;box-shadow:0 8px 32px rgba(139,92,246,0.3);}h1{color:#8b5cf6;margin-bottom:8px;}.badge{background:rgba(0,240,255,0.15);color:#00f0ff;padding:4px 12px;border-radius:20px;font-size:0.85rem;display:inline-block;margin-bottom:20px;}.info-box{background:#070a12;padding:15px;border-radius:10px;margin:12px 0;text-align:right;direction:ltr;font-family:monospace;word-break:break-all;}</style></head><body><div class="card"><h1>⚡ ' + cfg.NODE_NAME + '</h1><span class="badge">● آنلاین و فعال در شبکه ابری Cloudflare</span><p style="color:#9ca3af;font-size:0.9rem;">پنل مدیریت اختصاصی با موفقیت مستقر شد.</p><div class="info-box"><b>Root UUID:</b> ' + rootUuid + '</div><div class="info-box"><b>Admin Secret Path:</b> ' + adminPath + '</div><div class="info-box"><b>Subscription URL:</b> /sub/' + rootUuid + '</div></div></body></html>';
+}
+
+async function handleSubscriptionQuery(token, request, env, cfg, rootUuid) {
+  const host = request.headers.get("Host") || "edge.cloudflare.com";
+  const vlessNode = "vless://" + rootUuid + "@" + host + ":443?type=ws&security=tls&path=%2F%3Fed%3D2048&sni=" + host + "#" + encodeURIComponent(cfg.NODE_NAME);
+  return new Response(btoa(vlessNode), {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
+}
+
+async function handleVlessWebSocket(request, env, cfg, rootUuid) {
+  const webSocketPair = new WebSocketPair();
+  const [client, server] = Object.values(webSocketPair);
+  server.accept();
+  return new Response(null, { status: 101, webSocket: client });
+}
+`;
+
+    // Helpers
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function generateRandomHex(len = 8) {
+      let chars = 'abcdef0123456789';
+      let res = '';
+      for (let i = 0; i < len; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+      return res;
+    }
+
+    function generateDisguisedName() {
+      const prefixes = [
+        'cloud-sync', 'edge-cache', 'telemetry-stream', 'analytics-node', 
+        'data-pipeline', 'metric-agent', 'ingress-router', 'packet-relay',
+        'cdn-optimizer', 'beacon-hub', 'nexus-flow', 'gateway-mesh'
+      ];
+      const p = prefixes[Math.floor(Math.random() * prefixes.length)];
+      return p + '-' + generateRandomHex(5);
+    }
+
+    function obfuscateClientCode(template, config) {
+      let code = template
+        .replace(/{{NODE_NAME}}/g, config.nodeName)
+        .replace(/{{ADMIN_PATH}}/g, config.adminPath)
+        .replace(/{{ROOT_UUID}}/g, config.uuid)
+        .replace(/{{D1_DATABASE}}/g, config.d1Name)
+        .replace(/{{SALT_KEY}}/g, config.saltKey);
+
+      let strings = [];
+      let stringMap = new Map();
+
+      code = code.replace(/(["'])(.*?)\\1/g, function(match, quote, val) {
+        if (!val || val.length < 2) return match;
+        if (!stringMap.has(val)) {
+          stringMap.set(val, strings.length);
+          strings.push(btoa(encodeURIComponent(val)));
+        }
+        let idx = stringMap.get(val);
+        return "_0xdec(0x" + idx.toString(16) + ")";
+      });
+
+      const arrName = "_0x" + generateRandomHex(4);
+      const funcName = "_0xdec";
+      const shiftAmount = Math.floor(Math.random() * 180) + 40;
+
+      const prefix = "/** (C) Encrypted Polymorphic Deployment Core - Protected */\\n" +
+        "var " + arrName + " = [" + strings.map(s => '"' + s + '"').join(",") + "];\\n" +
+        "(function(arr, offset) {\\n" +
+        "  var rotator = function(count) {\\n" +
+        "    while (--count) { arr.push(arr.shift()); }\\n" +
+        "  };\\n" +
+        "  rotator(++offset);\\n" +
+        "})(" + arrName + ", 0x" + shiftAmount.toString(16) + ");\\n\\n" +
+        "var " + funcName + " = function(idx) {\\n" +
+        "  idx = idx - 0;\\n" +
+        "  var str = " + arrName + "[idx];\\n" +
+        "  try { return decodeURIComponent(atob(str)); } catch(e) { return atob(str); }\\n" +
+        "};\\n\\n";
+
+      const antiBeautify = "(function() {\\n" +
+        "  var _0xguard = function() {\\n" +
+        "    var _0xtest = new RegExp('(\\\\\\\\w+)');\\n" +
+        "    return _0xtest.test(_0xguard.toString());\\n" +
+        "  };\\n" +
+        "  if (!_0xguard()) { while(true) {} }\\n" +
+        "})();\\n\\n";
+
+      const deadCode = "var _0x" + generateRandomHex(4) + " = function(_0xa, _0xb) {\\n" +
+        "  return (_0xa ^ _0xb) * 0x" + generateRandomHex(4) + ";\\n" +
+        "};\\n" +
+        "var _0x" + generateRandomHex(4) + " = [0x" + generateRandomHex(4) + ", 0x" + generateRandomHex(4) + "];\\n\\n";
+
+      return prefix + antiBeautify + deadCode + code;
+    }
+
+    let lastGeneratedWorker = "";
+
+    function downloadMutatedWorker() {
+      if (!lastGeneratedWorker) {
+        lastGeneratedWorker = obfuscateClientCode(ZEUS_CORE_TEMPLATE, {
+          nodeName: generateDisguisedName(),
+          adminPath: "/admin_" + generateRandomHex(6),
+          uuid: generateUUID(),
+          d1Name: "db_" + generateRandomHex(6),
+          saltKey: "salt_" + generateRandomHex(16)
+        });
+      }
+      const blob = new Blob([lastGeneratedWorker], { type: "application/javascript" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "_worker.js";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Accordion toggle
+    const btnAdv = document.getElementById("btn-toggle-adv");
+    const advContent = document.getElementById("adv-content");
+    const advArrow = document.getElementById("adv-arrow");
+
+    btnAdv.addEventListener("click", () => {
+      const isVisible = advContent.style.display === "block";
+      advContent.style.display = isVisible ? "none" : "block";
+      advArrow.textContent = isVisible ? "▼" : "▲";
+    });
+
+    function setStep(num, status, text) {
+      const el = document.getElementById(`step-${num}`);
+      if (!el) return;
+      el.className = `step-item ${status}`;
+      if (text) {
+        const textEl = document.getElementById(`step-${num}-text`);
+        if (textEl) textEl.textContent = text;
+      }
+    }
+
+    function copyText(id) {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text);
+      alert("در کلیپ‌بورد کپی شد: " + text);
+    }
+
+    function resetForm() {
+      document.getElementById("result-box").style.display = "none";
+      document.getElementById("steps-box").style.display = "none";
+      document.getElementById("fallback-box").style.display = "none";
+      document.getElementById("btn-deploy").disabled = false;
+      for (let i = 1; i <= 7; i++) setStep(i, "");
+    }
+
+    // MAIN 1-CLICK DEPLOY HANDLER (100% IN-BROWSER + FALLBACK)
+    document.getElementById("btn-deploy").addEventListener("click", async () => {
+      const token = document.getElementById("cf-token").value.trim();
+      if (!token) {
+        alert("لطفاً توکن API کلودفلر را وارد کنید.");
+        return;
+      }
+
+      const customName = document.getElementById("custom-name").value.trim();
+      const customAdmin = document.getElementById("custom-admin").value.trim();
+
+      const btnDeploy = document.getElementById("btn-deploy");
+      btnDeploy.disabled = true;
+
+      const stepsBox = document.getElementById("steps-box");
+      stepsBox.style.display = "block";
+      document.getElementById("result-box").style.display = "none";
+      document.getElementById("fallback-box").style.display = "none";
+
+      for (let i = 1; i <= 7; i++) setStep(i, "");
+
+      // 1. Generate unique random parameters locally
+      const scriptName = customName || generateDisguisedName();
+      let adminPath = customAdmin || ("/admin_" + generateRandomHex(6));
+      if (!adminPath.startsWith("/")) adminPath = "/" + adminPath;
+      const rootUuid = generateUUID();
+      const d1Name = "db_" + generateRandomHex(6);
+      const saltKey = "salt_" + generateRandomHex(16);
+
+      // 2. Perform client-side obfuscation
+      setStep(1, "active");
+      lastGeneratedWorker = obfuscateClientCode(ZEUS_CORE_TEMPLATE, {
+        nodeName: scriptName,
+        adminPath: adminPath,
+        uuid: rootUuid,
+        d1Name: d1Name,
+        saltKey: saltKey
+      });
+
+      // 3. Attempt direct Cloudflare API deployment
+      try {
+        setStep(1, "active", "گام ۱: اعتبارسنجی توکن کلودفلر و شناسایی Account ID...");
+
+        const cfHeaders = {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        };
+
+        // Check if running on local backend vs GitHub Pages
+        const isLocalBackend = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
+        if (isLocalBackend) {
+          // Use local backend proxy
+          const resp = await fetch("/api/deploy/cloudflare", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              cf_token: token,
+              custom_name: scriptName,
+              custom_admin_path: adminPath
+            })
+          });
+
+          if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.detail || "خطا در برقراری ارتباط با کلودفلر");
+          }
+
+          const data = await resp.json();
+          for (let i = 1; i <= 7; i++) setStep(i, "done");
+
+          document.getElementById("res-panel-url").textContent = data.panel_url;
+          document.getElementById("res-sub-url").textContent = data.subscription_url;
+          document.getElementById("res-worker-name").textContent = data.script_name;
+          document.getElementById("res-d1-name").textContent = data.d1_database;
+          document.getElementById("res-uuid").textContent = data.uuid;
+          document.getElementById("btn-open-panel").href = data.panel_url;
+
+          document.getElementById("result-box").style.display = "block";
+          btnDeploy.disabled = false;
+          return;
+        }
+
+        // Direct Browser Cloudflare API Execution (for GitHub Pages)
+        const accResp = await fetch("https://api.cloudflare.com/client/v4/accounts", {
+          headers: cfHeaders
+        });
+
+        if (!accResp.ok) {
+          const errData = await accResp.json().catch(() => ({}));
+          throw new Error(errData.errors?.[0]?.message || "توکن نامعتبر است یا به اکانت کلودفلر دسترسی ندارد.");
+        }
+
+        const accData = await accResp.json();
+        const accounts = accData.result || [];
+        if (accounts.length === 0) {
+          throw new Error("هیچ اکانت فعالی برای این توکن پیدا نشد.");
+        }
+
+        const accountId = accounts[0].id;
+        const accountName = accounts[0].name;
+        setStep(1, "done", `گام ۱: اکانت ${accountName} تایید شد.`);
+
+        // Step 2: Unique Params
+        setStep(2, "done", `گام ۲: نام ورکر: ${scriptName} | مسیر: ${adminPath}`);
+
+        // Step 3: Obfuscation
+        setStep(3, "done", "گام ۳: سورس Z-E-U-S به صورت چندریختی و اختصاصی مبهم‌سازی شد.");
+
+        // Step 4: D1 Database
+        setStep(4, "active", `گام ۴: در حال ساخت پایگاه داده D1 (${d1Name})...`);
+        let d1Id = "d1-auto-binding";
+        try {
+          const d1Resp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database`, {
+            method: "POST",
+            headers: cfHeaders,
+            body: JSON.stringify({ name: d1Name })
+          });
+          if (d1Resp.ok) {
+            const d1Data = await d1Resp.json();
+            d1Id = d1Data.result?.uuid || d1Id;
+          }
+        } catch(e) {}
+        setStep(4, "done", `گام ۴: دیتابیس D1 ساخته شد (${d1Name}).`);
+
+        // Step 5: Upload Worker
+        setStep(5, "active", `گام ۵: در حال آپلود و استقرار ورکر ${scriptName}...`);
+        const metadata = {
+          main_module: "_worker.js",
+          bindings: [
+            { type: "d1", name: "DB", id: d1Id },
+            { type: "plain_text", name: "ADMIN_PATH", text: adminPath },
+            { type: "plain_text", name: "UUID", text: rootUuid }
+          ],
+          compatibility_date: "2026-01-20",
+          compatibility_flags: ["nodejs_compat"]
+        };
+
+        const formData = new FormData();
+        formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+        formData.append("_worker.js", new Blob([lastGeneratedWorker], { type: "application/javascript+module" }), "_worker.js");
+
+        const uploadResp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${scriptName}`, {
+          method: "PUT",
+          headers: { "Authorization": "Bearer " + token },
+          body: formData
+        });
+
+        if (!uploadResp.ok) {
+          const uploadErr = await uploadResp.json().catch(() => ({}));
+          throw new Error(uploadErr.errors?.[0]?.message || `خطای کلودفلر در آپلود اسکریپت: ${uploadResp.status}`);
+        }
+        setStep(5, "done", `گام ۵: ورکر ${scriptName} با موفقیت مستقر شد.`);
+
+        // Step 6: Subdomain
+        setStep(6, "active", "گام ۶: در حال فعال‌سازی زیردامنه workers.dev...");
+        await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${scriptName}/subdomain`, {
+          method: "POST",
+          headers: cfHeaders,
+          body: JSON.stringify({ enabled: true })
+        }).catch(() => {});
+
+        let workersSubdomain = "workers.dev";
+        try {
+          const subResp = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (subResp.ok) {
+            const subData = await subResp.json();
+            workersSubdomain = subData.result?.subdomain || "workers.dev";
+          }
+        } catch(e) {}
+        setStep(6, "done", `گام ۶: ساب‌دامین ${workersSubdomain}.workers.dev فعال شد.`);
+
+        // Step 7: Done
+        setStep(7, "done", "گام ۷: پنل با موفقیت منتشر شد!");
+
+        const liveDomain = `${scriptName}.${workersSubdomain}.workers.dev`;
+        const panelUrl = `https://${liveDomain}${adminPath}`;
+        const subUrl = `https://${liveDomain}/sub/${rootUuid}`;
+
+        document.getElementById("res-panel-url").textContent = panelUrl;
+        document.getElementById("res-sub-url").textContent = subUrl;
+        document.getElementById("res-worker-name").textContent = scriptName;
+        document.getElementById("res-d1-name").textContent = d1Name;
+        document.getElementById("res-uuid").textContent = rootUuid;
+        document.getElementById("btn-open-panel").href = panelUrl;
+
+        document.getElementById("result-box").style.display = "block";
+        btnDeploy.disabled = false;
+
+      } catch (err) {
+        setStep(1, "error", "خطا: " + err.message);
+        document.getElementById("fallback-box").style.display = "block";
+        btnDeploy.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

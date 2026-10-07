@@ -1,0 +1,40 @@
+name: Deploy Zeus Worker to Cloudflare (Manual Runner)
+
+on:
+  workflow_dispatch:
+    inputs:
+      cf_token:
+        description: 'Cloudflare API Token (Never stored in repository secrets)'
+        required: true
+        type: string
+      custom_name:
+        description: 'Optional disguised worker name (Leave empty for auto-generated)'
+        required: false
+        type: string
+      custom_admin_path:
+        description: 'Optional admin secret path (Leave empty for auto /admin_xxxx)'
+        required: false
+        type: string
+
+jobs:
+  deploy_worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          pip install --no-cache-dir httpx
+
+      - name: Execute Polymorphic Deployment
+        run: |
+          python3 deploy.py \
+            --token "${{ github.event.inputs.cf_token }}" \
+            --name "${{ github.event.inputs.custom_name }}" \
+            --admin-path "${{ github.event.inputs.custom_admin_path }}"
